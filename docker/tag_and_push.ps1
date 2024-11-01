@@ -2,7 +2,7 @@
 # build and push docker image to specified registry
 #>
 param(
-  (string)$registry
+  [string]$registry
 )
 
 $buildOutput = docker build -q .
