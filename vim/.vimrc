@@ -27,6 +27,7 @@ nnoremap <CR> :noh<CR><CR>:<backspace> " when in normal mode, enter returns :noh
 set mouse=a
 set mousemodel=popup_setpos
 
+set runtimepath+=$GOROOT/misc/vim
 syntax enable
 filetype plugin on
 
@@ -47,12 +48,14 @@ set belloff=all
 call plug#begin()
 
 " List your plugins here
+
+Plug 'ryanoasis/vim-devicons'
 Plug 'dense-analysis/ale'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'tpope/vim-commentary'
-Plug 'ryanoasis/vim-devicons'
 Plug 'scrooloose/nerdtree'
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 
 call plug#end()
 
@@ -66,7 +69,14 @@ let g:ale_sign_warning = '⚠️'
 " let g:ale_hover_cursor = 1
 " let g:ale_completion_enabled = 1
 " let g:airline#extensions#ale#enabled = 1
-let g:ale_linters = {'python': ['flake8']}
+let g:ale_linters = {
+\  '*': ['remove_trailing_lines', 'trim_whitespace'],
+\  'c': ['clang', 'gcc'],
+\  'cpp': ['clang', 'gcc'],
+\  'golang': ['golangci-lint', 'gopls'],
+\  'javascript': ['eslint'],
+\  'python': ['autoimport', 'black', 'flake8'],
+\}
 
 highlight clear ALEErrorSign
 highlight clear ALEWarningSign
@@ -79,8 +89,5 @@ nnoremap <C-t> : NERDTreeToggle<CR>
 let NERDTreeShowHidden = 1
 
 " devicon configuration
-" let g:WebDevIconsOS = 'Darwin'
-" let g:webdevicons_enable = 1
-" let g:webdevicons_enable_nerdtree = 1
-" let g:webdevicons_enable_airline_tabline = 1
-" let g:webdevicons_enable_airline_statusline = 1
+" can't get it working with nerdtree for now so easier to just disable it
+let g:webdevicons_enable_nerdtree = 0
