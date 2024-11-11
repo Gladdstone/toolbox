@@ -1,6 +1,7 @@
 set number
 set cursorline
 set scrolloff=50
+set splitright
 set showcmd
 set noshowmode
 set conceallevel=1
@@ -50,7 +51,7 @@ call plug#begin()
 " List your plugins here
 
 Plug 'ryanoasis/vim-devicons'
-Plug 'dense-analysis/ale'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'tpope/vim-commentary'
@@ -59,27 +60,21 @@ Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 
 call plug#end()
 
-" ale configuration
-let g:ale_sign_error = '❌'
-let g:ale_sign_warning = '⚠️'
-
-" let g:ale_hover_cursor = 1
-" let g:ale_floating_preview = 1
-" let g:ale_hover_to_floating_preview = 1
-" let g:ale_hover_cursor = 1
-" let g:ale_completion_enabled = 1
-" let g:airline#extensions#ale#enabled = 1
-let g:ale_linters = {
-\  '*': ['remove_trailing_lines', 'trim_whitespace'],
-\  'c': ['clang', 'gcc'],
-\  'cpp': ['clang', 'gcc'],
-\  'golang': ['golangci-lint', 'gopls'],
-\  'javascript': ['eslint'],
-\  'python': ['autoimport', 'black', 'flake8'],
-\}
-
-highlight clear ALEErrorSign
-highlight clear ALEWarningSign
+" coc configuration
+" Dependencies: ripgrep
+" coc-python
+" coc-rust-analyzer
+" coc-go
+" coc-java
+" coc-tsserver
+" coc-omnisharp (dotnet)
+let g:coc_user_config = {
+\ "diagnostic.errorSign": "❌",
+\ "diagnostic.warningSign": "⚠️ ",
+\ "diagnostic.infoSign": "ℹ",
+\ "diagnostic.hintSign": "➤",
+\ "diagnostic.virtualTextPrefix": "● ",
+\ }
 
 " airline configuration
 let g:airline_powerline_fonts = 1
