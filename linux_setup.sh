@@ -38,9 +38,9 @@ make ARCH=x86_64 -j2
 
 # running the kernel
 # user - root; password -
-qemu-system-x86_64 -s -kernel arch/x86/boot/bzImage -boot c -m 2049M -hda <path to buildroot>/output/images/rootfs.ext4 -append "root=/dev/sda rw console=ttyS0,115200 acpi=off nokaslr" -serial stdio -display none
+qemu-system-x86_64 -s -kernel arch/x86/boot/bzImage -boot c -m 2049M -drive file=<path to buildroot>/output/images/rootfs.ext4,format=raw,if=ide -append "root=/dev/sda rw console=ttyS0,115200" -serial stdio -display none
 # running the kernel w/ gdb
-qemu-system-x86_64 -s -S  -kernel arch/x86/boot/bzImage -boot c -m 2049M -hda ~/Downloads/buildroot-2021.02.8/output/images/rootfs.ext4 -append "root=/dev/sda rw console=ttyS0,115200 acpi=off nokaslr" -serial stdio -display none
+qemu-system-x86_64 -s -S  -kernel arch/x86/boot/bzImage -boot c -m 2049M -drive file=~/Downloads/buildroot-2021.02.8/output/images/rootfs.ext4,format=raw,if=ide -append "root=/dev/sda rw console=ttyS0,115200" -serial stdio -display none
 
 # debugging w/ GDB
 gdb-multiarch
