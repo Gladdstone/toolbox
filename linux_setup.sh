@@ -2,7 +2,20 @@
 # not for running so much as it is for notes
 apt-get update && apt-get upgrade
 
-apt-get install build-essential libncurses5-dev gcc-x86-64-linux-gnu g++-x86-64-linux-gnu flex bison libssl-dev libelf-dev
+apt-get install build-essential libncurses5-dev gcc-x86-64-linux-gnu g++-x86-64-linux-gnu flex bison libssl-dev libelf-dev rsync gdb-multiarch
+
+# rust
+apt-get install clang libclang-dev llvm-dev lld
+
+curl https://sh.rustup.rs -sSf | bash -s -- -y
+
+cargo install bindgen-cli
+
+git clone https://github.com/rust-lang/rust-bindgen -b v0.56.0 --depth=1
+cargo install --path rust-bindgen
+
+rustup override set $(scripts/min-tool-version.sh rustc)
+rustup component add rust-src
 
 # configure linux
 # make ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- defconfig
@@ -28,6 +41,14 @@ make ARCH=x86_64 -j2
 qemu-system-x86_64 -s -kernel arch/x86/boot/bzImage -boot c -m 2049M -hda <path to buildroot>/output/images/rootfs.ext4 -append "root=/dev/sda rw console=ttyS0,115200 acpi=off nokaslr" -serial stdio -display none
 # running the kernel w/ gdb
 qemu-system-x86_64 -s -S  -kernel arch/x86/boot/bzImage -boot c -m 2049M -hda ~/Downloads/buildroot-2021.02.8/output/images/rootfs.ext4 -append "root=/dev/sda rw console=ttyS0,115200 acpi=off nokaslr" -serial stdio -display none
+
+# debugging w/ GDB
+gdb-multiarch
+target remote :1234
+
+
+-----------------------------------------------------------
+
 
 # Busybox-based filesystem
 # Note: currently Ubuntu 24 is not supported by Busybox: https://bugs.busybox.net/show_bug.cgi?id=15931
