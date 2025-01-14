@@ -1,11 +1,14 @@
 set number
 set cursorline
-set scrolloff=50
 set splitright
 set showcmd
 set noshowmode
+set whichwrap+=<,>,h,l,[,]
 set conceallevel=1
 highlight clear SignColumn
+
+vnoremap <C-c> "+y
+nnoremap <C-c> "+yy
 
 set encoding=UTF-8
 
@@ -27,16 +30,32 @@ nnoremap <CR> :noh<CR><CR>:<backspace> " when in normal mode, enter returns :noh
 
 set mouse=a
 set mousemodel=popup_setpos
+" fix mouse in WSL
+" set ttymouse=sgr
 
 set runtimepath+=$GOROOT/misc/vim
 syntax enable
 filetype plugin on
 
-autocmd FileType yaml setlocal ts=4 sts=4 sw=4 expandtab
-autocmd FileType yml setlocal ts=4 sts=4 sw=4 expandtab
+" autocmd FileType yaml setlocal ts=4 sts=4 sw=4 expandtab
+" autocmd FileType yml setlocal ts=4 sts=4 sw=4 expandtab
+
+autocmd CursorMoved * silent! exe printf('match IncSearch /\<%s\>/', expand('<cword>'))
 
 " disable system chime
 set belloff=all
+
+" fix scroll
+function! AdjustScrolloff()
+    let l:winheight = winheight(0)
+    let l:ideal_scrolloff = l:winheight / 3
+    execute 'set scrolloff=' . l:ideal_scrolloff
+endfunction
+
+augroup DynamicScrolloff
+    autocmd!
+    autocmd VimResized,WinEnter * call AdjustScrolloff()
+augroup END
 
 " vim-plug configuration
 " Installation:
@@ -57,12 +76,16 @@ Plug 'vim-airline/vim-airline-themes'
 Plug 'tpope/vim-commentary'
 Plug 'scrooloose/nerdtree'
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+if has("gui_macvim")
+  " Plug 'phanviet/vim-monokai-pro'
+  Plug 'crusoexia/vim-monokai'
+endif
 
 call plug#end()
 
 " coc configuration
 " Dependencies: ripgrep
-" coc-python
+" coc-pyright
 " coc-rust-analyzer
 " coc-go
 " coc-java
@@ -73,7 +96,10 @@ let g:coc_user_config = {
 \ "diagnostic.warningSign": "⚠️ ",
 \ "diagnostic.infoSign": "ℹ",
 \ "diagnostic.hintSign": "➤",
+\ "diagnostic.enableMessage": "always",
+\ "diagnostic.virtualText": "true",
 \ "diagnostic.virtualTextPrefix": "● ",
+\ "suggest.enablePreview": "true",
 \ }
 
 " airline configuration
@@ -85,4 +111,14 @@ let NERDTreeShowHidden = 1
 
 " devicon configuration
 " can't get it working with nerdtree for now so easier to just disable it
-let g:webdevicons_enable_nerdtree = 0
+let g:webdevicons_enable_nerdtree = 1
+
+" MacVim settings
+if has("gui_macvim")
+  set background=dark
+  set guifont=hack_nerd_font:h12
+
+  set termguicolors
+  colorscheme monokai
+endif
+
