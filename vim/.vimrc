@@ -5,6 +5,9 @@ set showcmd
 set noshowmode
 set whichwrap+=<,>,h,l,[,]
 set conceallevel=1
+set nowrap
+set sidescroll=1
+set sidescrolloff=5
 highlight clear SignColumn
 
 vnoremap <C-c> "+y
@@ -39,11 +42,28 @@ filetype plugin on
 
 " autocmd FileType yaml setlocal ts=4 sts=4 sw=4 expandtab
 " autocmd FileType yml setlocal ts=4 sts=4 sw=4 expandtab
+autocmd FileType svg setlocal syntax=OFF
+autocmd FileType python setlocal ts=2 sts=2 sw=2 expandtab
 
 autocmd CursorMoved * silent! exe printf('match IncSearch /\<%s\>/', expand('<cword>'))
 
+" grep
+if executable('rg')
+  set grepprg=rg\ -H\ --no-heading\ --vimgrep
+  set grepformat=%f:%l:%c:%m
+endif
+
 " disable system chime
 set belloff=all
+
+" key remappings
+noremap! <silent> <C-l> <Esc>
+vnoremap <silent> <C-l> <Esc>
+onoremap <silent> <C-l> <Esc>
+noremap <silent> <leader>t :ter<CR>
+noremap <leader>w :wa<CR>
+noremap <leader>q :qa<CR>
+noremap <leader>wq :wqa<CR>
 
 " fix scroll
 function! AdjustScrolloff()
@@ -74,6 +94,7 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-fugitive'
 Plug 'scrooloose/nerdtree'
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 if has("gui_macvim")
@@ -108,6 +129,8 @@ let g:airline_powerline_fonts = 1
 " nerdtree configuration
 nnoremap <C-t> : NERDTreeToggle<CR>
 let NERDTreeShowHidden = 1
+autocmd VimEnter * NERDTree
+autocmd VimEnter * if len(argv()) > 0 | wincmd p | endif
 
 " devicon configuration
 " can't get it working with nerdtree for now so easier to just disable it
