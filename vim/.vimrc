@@ -8,6 +8,7 @@ set conceallevel=1
 set nowrap
 set sidescroll=1
 set sidescrolloff=5
+set shortmess-=S
 highlight clear SignColumn
 
 vnoremap <C-c> "+y
@@ -38,10 +39,12 @@ set mousemodel=popup_setpos
 
 set runtimepath+=$GOROOT/misc/vim
 syntax enable
+syntax sync minlines=256
 filetype plugin on
 
 " autocmd FileType yaml setlocal ts=4 sts=4 sw=4 expandtab
 " autocmd FileType yml setlocal ts=4 sts=4 sw=4 expandtab
+autocmd FileType cs setlocal ts=4 sts=4 sw=4 expandtab
 autocmd FileType svg setlocal syntax=OFF
 autocmd FileType python setlocal ts=2 sts=2 sw=2 expandtab
 
@@ -64,6 +67,13 @@ noremap <silent> <leader>t :ter<CR>
 noremap <leader>w :wa<CR>
 noremap <leader>q :qa<CR>
 noremap <leader>wq :wqa<CR>
+noremap <leader>h <C-w>h
+noremap <leader>j <C-w>j
+noremap <leader>k <C-w>k
+noremap <leader>l <C-w>l
+for i in range(1,9)
+  exec 'nnoremap <Leader>' . i . ' :tabn ' . i . '<CR>'
+endfor
 
 " fix scroll
 function! AdjustScrolloff()
@@ -85,6 +95,9 @@ augroup END
 " Windows
 " iwr -useb https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim |`
 "    ni $HOME/vimfiles/autoload/plug.vim -Force
+" Neovim
+" sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
+"    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 call plug#begin()
 
 " List your plugins here
@@ -98,7 +111,6 @@ Plug 'tpope/vim-fugitive'
 Plug 'scrooloose/nerdtree'
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 if has("gui_macvim")
-  " Plug 'phanviet/vim-monokai-pro'
   Plug 'crusoexia/vim-monokai'
 endif
 
@@ -122,6 +134,10 @@ let g:coc_user_config = {
 \ "diagnostic.virtualTextPrefix": "● ",
 \ "suggest.enablePreview": "true",
 \ }
+
+autocmd BufReadPre,BufNewFile * if line('$') > 2000 | let g:coc_enable_highlight = 0 | endif
+autocmd BufReadPre,BufNewFile * if line('$') > 1000 | let b:coc_diagnostic_enable = 0 | endif
+autocmd BufReadPre,BufNewFile * if line('$') > 1000 | let g:coc_enable_completions = 0 | endif
 
 " airline configuration
 let g:airline_powerline_fonts = 1
