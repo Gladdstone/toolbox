@@ -63,7 +63,9 @@ set belloff=all
 noremap! <silent> <C-l> <Esc>
 vnoremap <silent> <C-l> <Esc>
 onoremap <silent> <C-l> <Esc>
-noremap <silent> <leader>t :ter<CR>
+if !has('nvim')
+  noremap <silent> <leader>t :ter<CR>
+endif
 noremap <leader>w :wa<CR>
 noremap <leader>q :qa<CR>
 noremap <leader>wq :wqa<CR>
@@ -103,37 +105,42 @@ call plug#begin()
 " List your plugins here
 
 Plug 'ryanoasis/vim-devicons'
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
 Plug 'scrooloose/nerdtree'
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+if !has('nvim')
+  Plug 'neoclide/coc.nvim', {'branch': 'release'}
+endif
 if has("gui_macvim")
   Plug 'crusoexia/vim-monokai'
 endif
 
 call plug#end()
 
-" coc configuration
-" Dependencies: ripgrep
-" coc-pyright
-" coc-rust-analyzer
-" coc-go
-" coc-java
-" coc-tsserver
-" coc-omnisharp (dotnet)
-let g:coc_user_config = {
-\ "diagnostic.errorSign": "❌",
-\ "diagnostic.warningSign": "⚠️ ",
-\ "diagnostic.infoSign": "ℹ",
-\ "diagnostic.hintSign": "➤",
-\ "diagnostic.enableMessage": "always",
-\ "diagnostic.virtualText": "true",
-\ "diagnostic.virtualTextPrefix": "● ",
-\ "suggest.enablePreview": "true",
-\ }
+if !has('nvim')
+  " coc configuration
+  " Dependencies: ripgrep
+  " coc-pyright
+  " coc-rust-analyzer
+  " coc-go
+  " coc-java
+  " coc-tsserver
+  " coc-omnisharp (dotnet)
+  let g:coc_user_config = {
+  \ "diagnostic.errorSign": "❌",
+  \ "diagnostic.warningSign": "⚠️ ",
+  \ "diagnostic.infoSign": "ℹ",
+  \ "diagnostic.hintSign": "➤",
+  \ "diagnostic.enableMessage": "always",
+  \ "diagnostic.virtualText": "true",
+  \ "diagnostic.virtualTextPrefix": "● ",
+  \ "suggest.enablePreview": "true",
+  \ "rust-analyzer.cargo.cfgs": [],
+  \ }
+endif
 
 autocmd BufReadPre,BufNewFile * if line('$') > 2000 | let g:coc_enable_highlight = 0 | endif
 autocmd BufReadPre,BufNewFile * if line('$') > 1000 | let b:coc_diagnostic_enable = 0 | endif
