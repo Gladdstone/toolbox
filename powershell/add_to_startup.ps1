@@ -2,7 +2,8 @@
 # Add a script to execute on powershell profile load
 #>
 param(
-  (string)$filepath
+  (string)$Filepath
+  (string)$Profile_Path = "$home\Documents\Powershell\Microsoft.PowerShell_profile.ps1"
 )
 
 if (!(Test-Path)) {
@@ -10,6 +11,6 @@ if (!(Test-Path)) {
   New-item -type file -force $profile
 }
 
-Add-Content -Path "$home\Documents\Powershell\Microsoft.PowerShell_profile.ps1" -Value "$filepath"
+Add-Content -Path $Profile_Path -Value "$Filepath"
 & $profile
 
