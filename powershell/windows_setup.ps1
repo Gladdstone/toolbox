@@ -27,10 +27,21 @@ New-Item ~/.kube/config -type file
 
 choco install k9s
 
+mkdir .ssh/
+cd .ssh/
+ssh-keygen -t ed25519 -C "your_email@example.com"
+Start-Service ssh-agent
+ssh-add ~/.ssh/id_ed25519
+Get-Content ~/.ssh/id_ed25519.pub | Set-Clipboard
+
 mkdir ~/Code
 
 # Bootstrap profile
 # & "./add_to_startup.ps1 -Profile_Path $PROFILE_PATH"
 
+Install-Module posh-git -Scope CurrentUser
+Import-Module posh-git
+
 Add-Content -Path $PROFILE_PATH -Value "kubectl completion powershell | Out-String | Invoke-Expression"
+Add-Content -Path $PROFILE_PATH -Value "Import-Module posh-git"
 
