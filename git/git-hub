@@ -1,0 +1,26 @@
+#!/bin/sh
+
+origin=$(git config --get remote.origin.url)
+
+url=""
+if [[ "$origin" == *"@"* ]]; then
+  url=$(echo $origin | sed -E 's/^[^@]*@//' | sed 's/:/\//')
+else
+  url=$origin
+fi
+
+if [[ ! -z "$url" ]]; then
+    echo "Opening remote origin $url..."
+fi
+
+# macOS
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  open "https://$url"
+# Linux
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  xdg-open "https://$url"
+# Windows Git Bash (or WSL with browser set)
+elif [[ "$OSTYPE" == "msys"* || "$OSTYPE" == "cygwin"* ]]; then
+  start "https://$url"
+fi
+
