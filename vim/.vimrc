@@ -9,7 +9,11 @@ set nowrap
 set sidescroll=1
 set sidescrolloff=5
 set shortmess-=S
-highlight clear SignColumn
+set signcolumn=auto
+highlight SignColumn guibg=NONE ctermbg=NONE
+
+" adjusting this lower can affect performance
+set updatetime=4000
 
 vnoremap <C-c> "+y
 nnoremap <C-c> "+yy
@@ -20,7 +24,7 @@ set encoding=UTF-8
 set backspace=indent,eol,start
 
 " spaces instead of tabs
-set tabstop=2 softtabstop=2 shiftwidth=2
+set tabstop=4 softtabstop=4 shiftwidth=4
 set expandtab
 set autoindent
 set smartindent
@@ -44,10 +48,12 @@ filetype plugin on
 
 " autocmd FileType yaml setlocal ts=4 sts=4 sw=4 expandtab
 " autocmd FileType yml setlocal ts=4 sts=4 sw=4 expandtab
-autocmd FileType cs setlocal ts=4 sts=4 sw=4 expandtab
 autocmd FileType svg setlocal syntax=OFF
 autocmd FileType python setlocal ts=2 sts=2 sw=2 expandtab
+" tabs are a hard requirement for Makefiles
+autocmd FileType make setlocal noexpandtab tabstop=8 shiftwidth=8 softtabstop=0
 
+" highlight on hover
 autocmd CursorMoved * silent! exe printf('match IncSearch /\<%s\>/', expand('<cword>'))
 
 " grep
@@ -109,16 +115,41 @@ Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
+Plug 'airblade/vim-gitgutter'
 Plug 'scrooloose/nerdtree'
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 if !has('nvim')
   Plug 'neoclide/coc.nvim', {'branch': 'release'}
+endif
+if has('nvim')
+  Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+  Plug 'nvim-treesitter/nvim-treesitter-textobjects'
 endif
 if has("gui_macvim")
   Plug 'crusoexia/vim-monokai'
 endif
 
 call plug#end()
+
+" disable some plugins for large files
+let g:line_threshold = 5000
+
+augroup LargeFilePluginDisabler
+  autocmd!
+  autocmd BufReadPost * call s:disable_plugins_for_large_files()
+augroup END
+
+function! s:disable_plugins_for_large_files()
+  if line('$') > g:line_threshold
+
+    if exists('*coc#rpc#stop_server')
+      " Disable CoC for this buffer
+      call coc#rpc#stop_server()
+    endif
+
+    echom "Large file detected (" . line('$') . " lines) — disabling some plugins."
+  endif
+endfunction
 
 if !has('nvim')
   " coc configuration
@@ -141,6 +172,10 @@ if !has('nvim')
   \ "rust-analyzer.cargo.cfgs": [],
   \ }
 endif
+" display docs with 'K' on cursor hover
+nmap <silent> K :call CocActionAsync('doHover')<CR>
+
+let g:coc_disable_startup_warning = 1
 
 autocmd BufReadPre,BufNewFile * if line('$') > 2000 | let g:coc_enable_highlight = 0 | endif
 autocmd BufReadPre,BufNewFile * if line('$') > 1000 | let b:coc_diagnostic_enable = 0 | endif
@@ -168,3 +203,52 @@ if has("gui_macvim")
   colorscheme monokai
 endif
 
+" Neovim settings
+if has('nvim')
+noremap <silent> <leader>t :vert split +term<CR>
+
+lua << EOF
+require'nvim-treesitter.configs'.setup {
+  ensure_installed = { "c" },
+
+  highlight = {
+    enable = true,
+    additional_vim_regex_highlighting = false,
+  },
+
+  rainbow = {
+    enable = true,
+    extended_mode = true, -- highlight more than just brackets
+    max_file_lines = nil, -- disable on very large files
+  },
+
+  textobjects = {
+    select = {
+      enable = true,
+      lookahead = true, -- jump to next text object automatically
+
+      keymaps = {
+        ["af"] = "@function.outer",
+        ["if"] = "@function.inner",
+        ["ac"] = "@class.outer",
+        ["ic"] = "@class.inner",
+      },
+    },
+  },
+
+  move = {
+    enable = true,
+    set_jumps = true,
+
+    goto_next_start = {
+      ["<leader>f"] = "@function.outer",
+      ["]]"] = "@class.outer",
+    },
+    goto_previous_start = {
+      ["<leader>F"] = "@function.outer",
+      ["[["] = "@class.outer",
+    },
+  },
+}
+EOF
+endif
