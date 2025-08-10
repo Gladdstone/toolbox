@@ -1,13 +1,19 @@
 #!/bin/sh
 # Linux machine setup
+arch=$(echo uname -m)
 
 apt-get update && apt-get upgrade -y
 
 apt-get install build-essential \
     curl \
     git \
+    sl \
+    ripgrep \
     runc \
     vim
+
+git config --global user.email "joe@example.com"
+git config --global user.name "Joseph Farrell"
 
 # install node (coc-vim dependency)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
@@ -29,6 +35,17 @@ echo \
   tee /etc/apt/sources.list.d/docker.list > /dev/null
 apt-get update
 apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Install k9s
+if [[ "$arch" -eq "arm64" ]]; then
+    wget https://github.com/derailed/k9s/releases/download/v0.50.9/k9s_Linux_arm64.tar.gz -O k9s_Linux.tar.gz
+else
+    wget https://github.com/derailed/k9s/releases/download/v0.50.9/k9s_Linux_amd64.tar.gz -O k9s_Linux.tar.gz
+fi
+
+tar -xvf k9s_Linux.tar.gz
+mv ./k9s /usr/local/bin
+rm k9s_Linux.tar.gz
 
 mkdir ~/code
 cp ./vim/.vimrc ~/.vimrc 
