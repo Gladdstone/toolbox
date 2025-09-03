@@ -48,8 +48,10 @@ mv ./k9s /usr/local/bin
 rm k9s_Linux.tar.gz
 
 mkdir ~/code
-cp ./vim/.vimrc ~/.vimrc 
+cp ./vim/.vimrc ~/.vimrc
 
+# setting docker buildkit to 0 disables docker buildkit and causes docker to output docker v2 schema images rather than OCI
+# this may be necessary when pushing to certain repositories, as mixing the two can cause problems
 echo "export DOCKER_BUILDKIT=0" >> ~/.bashrc
 echo "NEXT_TELEMETRY_DISABLED=1" >> ~/.bashrc
 echo "STORYBOOK_DISABLE_TELEMETRY=1" >> ~/.bashrc
