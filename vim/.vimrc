@@ -154,6 +154,7 @@ endfunction
 if !has('nvim')
   " coc configuration
   " Dependencies: ripgrep
+  " coc-clangd
   " coc-pyright
   " coc-rust-analyzer
   " coc-go
@@ -187,8 +188,34 @@ let g:airline_powerline_fonts = 1
 " nerdtree configuration
 nnoremap <C-t> : NERDTreeToggle<CR>
 let NERDTreeShowHidden = 1
+" autocmd BufReadPre * call CheckIfSCP()
 autocmd VimEnter * NERDTree
 autocmd VimEnter * if len(argv()) > 0 | wincmd p | endif
+
+" nerdtree does not support scp. Use netrw instead.
+function! CheckIfSCP()
+  if expand('%:p') !~# '^scp://'
+    autocmd VimEnter * NERDTree
+    autocmd VimEnter * if len(argv()) > 0 | wincmd p | endif
+  endif
+endfunction
+
+function! s:ResizeNERDTree()
+    " Get the length of the longest line in NERDTree buffer
+    let max = 0
+    for i in range(1, line('$'))
+      let l = strlen(getline(i))
+      if l > max
+        let max = l
+      endif
+    endfor
+    " Add some padding and set the window width
+    let width = max + 1
+    execute "vertical resize " . width
+endfunction
+
+" Automatically resize NERDTree when opening or switching buffers
+" autocmd BufEnter * call s:ResizeNERDTree()
 
 " devicon configuration
 " can't get it working with nerdtree for now so easier to just disable it

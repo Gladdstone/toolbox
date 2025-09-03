@@ -50,6 +50,7 @@ rm k9s_Linux.tar.gz
 mkdir ~/code
 cp ./vim/.vimrc ~/.vimrc 
 
+echo "export DOCKER_BUILDKIT=0" >> ~/.bashrc
 echo "NEXT_TELEMETRY_DISABLED=1" >> ~/.bashrc
 echo "STORYBOOK_DISABLE_TELEMETRY=1" >> ~/.bashrc
 echo "alias reload=\"source ~/.bashrc\"" >> ~/.bashrc
