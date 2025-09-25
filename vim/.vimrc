@@ -135,10 +135,9 @@ if has('nvim')
   Plug 'mason-org/mason.nvim'
   Plug 'mason-org/mason-lspconfig.nvim'
   Plug 'karb94/neoscroll.nvim'
-  Plug 'folke/trouble.nvim'
-endif
-if has("gui_macvim")
-  Plug 'crusoexia/vim-monokai'
+  Plug 'mfussenegger/nvim-dap'
+  Plug 'nvim-neotest/nvim-nio'
+  Plug 'rcarriga/nvim-dap-ui'
 endif
 
 call plug#end()
@@ -206,23 +205,19 @@ autocmd VimEnter * if len(argv()) > 0 | wincmd p | endif
 let g:webdevicons_enable_nerdtree = 1
 
 
-" Neovim settings
+" Neovim settings ---------------------------------
 if has('nvim')
 noremap <silent> <leader>t :vert split +term<CR>
 
-lua require('overseer').setup()
-
-" lua require("mason").setup()
-" lua require("mason-lspconfig").setup({
-"   ensure_installed = { "pyright", "tsserver", "lua_ls", "clangd" }, -- add your language servers here
-" })
-
-
 lua << EOF
+
+require('overseer').setup()
+
 require('mason').setup()
 require("mason-lspconfig").setup({
   ensure_installed = { "pyright", "lua_ls", "clangd", "codelldb", "rust_analyzer" }, -- add your language servers here
 })
+require("dapui").setup()
 
 require'nvim-treesitter.configs'.setup {
   ensure_installed = { "c", "rust", "toml" },
@@ -266,5 +261,31 @@ require'nvim-treesitter.configs'.setup {
     },
   },
 }
+
+-- dap debugger configuration
+
+local dap = require("dap")
+local dapui = require("dapui")
+
+dap.listeners.after.event_initialized["dapui_config"] = function()
+  dapui.open()
+end
+
+dap.listeners.before.event_terminated["dapui_config"] = function()
+  dapui.close()
+end
+
+dap.listeners.before.event_exited["dapui_config"] = function()
+  dapui.close()
+end
+
+vim.keymap.set("n", "<leader>du", function() dapui.toggle() end, { desc = "Toggle DAP UI" })
+vim.keymap.set("n", "<leader>de", function() dapui.eval() end, { desc = "Eval expression" })
+vim.keymap.set("n", "<leader>db", function() dap.toggle_breakpoint() end, { desc = "Toggle Breakpoint" })
+vim.keymap.set("n", "<leader>dc", function() dap.continue() end, { desc = "Start/Continue Debugging" })
+vim.keymap.set("n", "<leader>dn", function() dap.step_over() end, { desc = "Step Over" })
+vim.keymap.set("n", "<leader>di", function() dap.step_into() end, { desc = "Step Into" })
+vim.keymap.set("n", "<leader>do", function() dap.step_out() end, { desc = "Step Out" })
+
 EOF
 endif
