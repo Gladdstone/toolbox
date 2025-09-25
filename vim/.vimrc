@@ -62,6 +62,8 @@ if executable('rg')
   set grepformat=%f:%l:%c:%m
 endif
 
+autocmd QuickFixCmdPost grep cwindow
+
 " disable system chime
 set belloff=all
 
@@ -82,6 +84,11 @@ noremap <leader>l <C-w>l
 for i in range(1,9)
   exec 'nnoremap <Leader>' . i . ' :tabn ' . i . '<CR>'
 endfor
+
+" convert 2 space file to 4 space
+nnoremap <Leader>>4 :%s/^\( \{2}\)*/\=repeat(' ', len(submatch(0)) * 2)/g<CR>
+" give you one guess
+nnoremap <Leader>>2 :%s/^\( \{4}\)*/\=repeat(' ', len(submatch(0)) / 2)/g<CR>
 
 " fix scroll
 function! AdjustScrolloff()
@@ -124,6 +131,11 @@ endif
 if has('nvim')
   Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
   Plug 'nvim-treesitter/nvim-treesitter-textobjects'
+  Plug 'stevearc/overseer.nvim'
+  Plug 'mason-org/mason.nvim'
+  Plug 'mason-org/mason-lspconfig.nvim'
+  Plug 'karb94/neoscroll.nvim'
+  Plug 'folke/trouble.nvim'
 endif
 if has("gui_macvim")
   Plug 'crusoexia/vim-monokai'
@@ -158,8 +170,6 @@ if !has('nvim')
   " coc-pyright
   " coc-rust-analyzer
   " coc-go
-  " coc-java
-  " coc-tsserver
   " coc-omnisharp (dotnet)
   let g:coc_user_config = {
   \ "diagnostic.errorSign": "❌",
@@ -172,9 +182,9 @@ if !has('nvim')
   \ "suggest.enablePreview": "true",
   \ "rust-analyzer.cargo.cfgs": [],
   \ }
-endif
 " display docs with 'K' on cursor hover
 nmap <silent> K :call CocActionAsync('doHover')<CR>
+endif
 
 let g:coc_disable_startup_warning = 1
 
@@ -188,55 +198,34 @@ let g:airline_powerline_fonts = 1
 " nerdtree configuration
 nnoremap <C-t> : NERDTreeToggle<CR>
 let NERDTreeShowHidden = 1
-" autocmd BufReadPre * call CheckIfSCP()
 autocmd VimEnter * NERDTree
 autocmd VimEnter * if len(argv()) > 0 | wincmd p | endif
-
-" nerdtree does not support scp. Use netrw instead.
-function! CheckIfSCP()
-  if expand('%:p') !~# '^scp://'
-    autocmd VimEnter * NERDTree
-    autocmd VimEnter * if len(argv()) > 0 | wincmd p | endif
-  endif
-endfunction
-
-function! s:ResizeNERDTree()
-    " Get the length of the longest line in NERDTree buffer
-    let max = 0
-    for i in range(1, line('$'))
-      let l = strlen(getline(i))
-      if l > max
-        let max = l
-      endif
-    endfor
-    " Add some padding and set the window width
-    let width = max + 1
-    execute "vertical resize " . width
-endfunction
-
-" Automatically resize NERDTree when opening or switching buffers
-" autocmd BufEnter * call s:ResizeNERDTree()
 
 " devicon configuration
 " can't get it working with nerdtree for now so easier to just disable it
 let g:webdevicons_enable_nerdtree = 1
 
-" MacVim settings
-if has("gui_macvim")
-  set background=dark
-  set guifont=hack_nerd_font:h12
-
-  set termguicolors
-  colorscheme monokai
-endif
 
 " Neovim settings
 if has('nvim')
 noremap <silent> <leader>t :vert split +term<CR>
 
+lua require('overseer').setup()
+
+" lua require("mason").setup()
+" lua require("mason-lspconfig").setup({
+"   ensure_installed = { "pyright", "tsserver", "lua_ls", "clangd" }, -- add your language servers here
+" })
+
+
 lua << EOF
+require('mason').setup()
+require("mason-lspconfig").setup({
+  ensure_installed = { "pyright", "lua_ls", "clangd", "codelldb", "rust_analyzer" }, -- add your language servers here
+})
+
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = { "c" },
+  ensure_installed = { "c", "rust", "toml" },
 
   highlight = {
     enable = true,
