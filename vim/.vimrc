@@ -129,6 +129,7 @@ if !has('nvim')
   Plug 'neoclide/coc.nvim', {'branch': 'release'}
 endif
 if has('nvim')
+  Plug 'nvim-tree/nvim-web-devicons'
   Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
   Plug 'nvim-treesitter/nvim-treesitter-textobjects'
   Plug 'stevearc/overseer.nvim'
@@ -138,6 +139,8 @@ if has('nvim')
   Plug 'mfussenegger/nvim-dap'
   Plug 'nvim-neotest/nvim-nio'
   Plug 'rcarriga/nvim-dap-ui'
+  Plug 'folke/trouble.nvim'
+  Plug 'neovim/nvim-lspconfig'
 endif
 
 call plug#end()
@@ -211,12 +214,23 @@ noremap <silent> <leader>t :vert split +term<CR>
 
 lua << EOF
 
+require("nvim-web-devicons").setup()
+
 require('overseer').setup()
 
 require('mason').setup()
 require("mason-lspconfig").setup({
-  ensure_installed = { "pyright", "lua_ls", "clangd", "codelldb", "rust_analyzer" }, -- add your language servers here
+  ensure_installed = { "pyright", "lua_ls", "clangd", "rust_analyzer" }, -- add your language servers here
 })
+
+local lspconfig = require("lspconfig")
+
+-- Setup servers with defaults or custom configs
+local servers = { "pyright", "lua_ls", "clangd", "rust_analyzer" }
+for _, server in ipairs(servers) do
+  lspconfig[server].setup({})
+end
+
 require("dapui").setup()
 
 require'nvim-treesitter.configs'.setup {
@@ -286,6 +300,25 @@ vim.keymap.set("n", "<leader>dc", function() dap.continue() end, { desc = "Start
 vim.keymap.set("n", "<leader>dn", function() dap.step_over() end, { desc = "Step Over" })
 vim.keymap.set("n", "<leader>di", function() dap.step_into() end, { desc = "Step Into" })
 vim.keymap.set("n", "<leader>do", function() dap.step_out() end, { desc = "Step Out" })
+
+require("trouble").setup({
+  mode = "workspace_diagnostics", -- default mode when opened
+  height = 12,
+  group = true,
+  auto_open = true,
+  auto_preview = false,
+  use_diagnostic_signs = true,
+})
+
+-- Automatically open Trouble only if there are diagnostics
+vim.api.nvim_create_autocmd("VimEnter", {
+  callback = function()
+    local diagnostics = vim.diagnostic.get(nil)
+    if diagnostics and #diagnostics > 0 then
+      vim.cmd("Trouble")
+    end
+  end
+})
 
 EOF
 endif
