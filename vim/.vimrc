@@ -10,6 +10,7 @@ set sidescroll=1
 set sidescrolloff=5
 set shortmess-=S
 set signcolumn=auto
+set termguicolors
 highlight SignColumn guibg=NONE ctermbg=NONE
 
 " adjusting this lower can affect performance
@@ -141,6 +142,7 @@ if has('nvim')
   Plug 'rcarriga/nvim-dap-ui'
   Plug 'folke/trouble.nvim'
   Plug 'neovim/nvim-lspconfig'
+  Plug 'folke/tokyonight.nvim'
 endif
 
 call plug#end()
@@ -210,6 +212,7 @@ let g:webdevicons_enable_nerdtree = 1
 
 " Neovim settings ---------------------------------
 if has('nvim')
+colorscheme tokyonight
 noremap <silent> <leader>t :vert split +term<CR>
 
 lua << EOF
@@ -281,6 +284,24 @@ require'nvim-treesitter.configs'.setup {
 local dap = require("dap")
 local dapui = require("dapui")
 
+dap.adapters.python = {
+    type = 'executable';
+    command = vim.fn.getcwd() .. '/.venv/bin/python';
+    args = { '-m', 'debugpy.adapter' };
+}
+
+dap.configurations.python = {
+    {
+        type = 'python';
+        request = 'launch';
+        name = 'Launch file';
+        program = "${file}";
+        pythonPath = function()
+            return vim.fn.getcwd() .. '/.venv/bin/python'
+        end,
+    },
+}
+
 dap.listeners.after.event_initialized["dapui_config"] = function()
   dapui.open()
 end
@@ -292,6 +313,13 @@ end
 dap.listeners.before.event_exited["dapui_config"] = function()
   dapui.close()
 end
+
+dap.adapters.codelldb = {
+    type = "executable",
+    command = "codelldb",
+    -- On Windows, you may need to uncomment this:
+    -- detached = false,
+}
 
 vim.keymap.set("n", "<leader>du", function() dapui.toggle() end, { desc = "Toggle DAP UI" })
 vim.keymap.set("n", "<leader>de", function() dapui.eval() end, { desc = "Eval expression" })
@@ -305,19 +333,8 @@ require("trouble").setup({
   mode = "workspace_diagnostics", -- default mode when opened
   height = 12,
   group = true,
-  auto_open = true,
   auto_preview = false,
   use_diagnostic_signs = true,
-})
-
--- Automatically open Trouble only if there are diagnostics
-vim.api.nvim_create_autocmd("VimEnter", {
-  callback = function()
-    local diagnostics = vim.diagnostic.get(nil)
-    if diagnostics and #diagnostics > 0 then
-      vim.cmd("Trouble")
-    end
-  end
 })
 
 EOF
