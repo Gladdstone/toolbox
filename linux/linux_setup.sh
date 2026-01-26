@@ -1,15 +1,45 @@
 #!/bin/sh
 # Linux machine setup
+set -e
 arch=$(echo uname -m)
 
-apt-get update && apt-get upgrade -y
+if command -v apt >/dev/null 2>&1; then
+    PKG_MGR="apt"
+elif command -v dnf >/dev/null 2>&1; then
+    PKG_MGR="dnf"
+else
+    echo "Error: Neither apt nor dnf found."
+    exit 1
+fi
 
-apt-get install build-essential \
-    curl \
-    git \
-    sl \
-    ripgrep \
-    runc \
+. /etc/os-release
+
+case "$ID" in
+    debian|ubuntu|linuxmint)
+        echo "Debian-based system"
+        $PKG_MGR install -y build-essential \
+            curl \
+            git \
+            sl \
+            runc
+        ;;
+    fedora)
+        echo "Fedora-based system"
+        $PKG_MGR install libcurl-devel \
+            git-all
+        source ./fedora/setup.sh
+        ;;
+    *)
+        echo "Unknown or unsupported distro: $ID"
+        exit 1
+        ;;
+esac
+
+echo "Using $PKG_MGR"
+
+$PKG_MGR update && $PKG_MGR upgrade -y
+
+$PKG_MGR install -y ripgrep \
     vim
 
 git config --global user.email "joe@example.com"
@@ -23,18 +53,23 @@ nvm install node
 curl https://sh.rustup.rs -sSf | bash -s -- -y
 
 # Install Docker
-apt-get update
-apt-get install ca-certificates curl
-install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
-chmod a+r /etc/apt/keyrings/docker.asc
+installDocker() {
+    $PKG_MGR update
+    $PKG_MGR install ca-certificates curl
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+    chmod a+r /etc/apt/keyrings/docker.asc
 
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  tee /etc/apt/sources.list.d/docker.list > /dev/null
-apt-get update
-apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+      tee /etc/apt/sources.list.d/docker.list > /dev/null
+    $PKG_MGR update
+    $PKG_MGR install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+}
+
+read -rp "Install Docker? (y/n): " install-docker
+[[ "$answer" =~ ^[Yy]([Ee][Ss])?$ ]] && installDocker
 
 # Install k9s
 if [[ "$arch" -eq "arm64" ]]; then
