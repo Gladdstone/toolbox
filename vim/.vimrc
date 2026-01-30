@@ -126,6 +126,9 @@ Plug 'tpope/vim-fugitive'
 Plug 'airblade/vim-gitgutter'
 Plug 'scrooloose/nerdtree'
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+Plug 'ghifarit53/tokyonight-vim'
 if !has('nvim')
   Plug 'neoclide/coc.nvim', {'branch': 'release'}
 endif
@@ -143,9 +146,17 @@ if has('nvim')
   Plug 'folke/trouble.nvim'
   Plug 'neovim/nvim-lspconfig'
   Plug 'folke/tokyonight.nvim'
+  Plug 'hrsh7th/nvim-cmp'
+  Plug 'hrsh7th/cmp-nvim-lsp'
+  Plug 'hrsh7th/cmp-buffer'
 endif
 
 call plug#end()
+
+let g:tokyonight_style = 'night' " available: night, storm
+let g:tokyonight_enable_italic = 1
+
+colorscheme tokyonight
 
 " disable some plugins for large files
 let g:line_threshold = 5000
@@ -166,6 +177,16 @@ function! s:disable_plugins_for_large_files()
     echom "Large file detected (" . line('$') . " lines) — disabling some plugins."
   endif
 endfunction
+
+function! ToggleBoolean()
+  let word = expand('<cword>')
+  if word == "true"
+    execute 'normal! ciw' . "false"
+  elseif word == "false"
+    execute 'normal! ciw' . "true"
+  endif
+endfunction
+noremap <leader>~ :call ToggleBoolean()<CR>
 
 if !has('nvim')
   " coc configuration
@@ -209,8 +230,9 @@ autocmd VimEnter * if len(argv()) > 0 | wincmd p | endif
 " can't get it working with nerdtree for now so easier to just disable it
 let g:webdevicons_enable_nerdtree = 1
 
-
 " Neovim settings ---------------------------------
+" add the following line in $HOME/.config/nvim/init.vim:
+" source $HOME/.vimrc
 if has('nvim')
 colorscheme tokyonight
 noremap <silent> <leader>t :vert split +term<CR>
@@ -234,10 +256,38 @@ for _, server in ipairs(servers) do
   lspconfig[server].setup({})
 end
 
+lspconfig.rust_analyzer.setup({
+  settings = {
+    ["rust-analyzer"] = {
+      inlayHints = {
+        enable = true,
+      },
+    },
+  },
+  on_attach = function(client, bufnr)
+    -- Enable Neovim’s built-in inlay hints
+    vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+  end,
+})
+
+local cmp = require'cmp'
+
+cmp.setup({
+  mapping = {
+    ['<C-n>'] = cmp.mapping.select_next_item(),
+    ['<C-p>'] = cmp.mapping.select_prev_item(),
+    ['<CR>'] = cmp.mapping.confirm({ select = true }),
+  },
+  sources = {
+    { name = 'nvim_lsp' },
+    { name = 'buffer' },
+  },
+})
+
 require("dapui").setup()
 
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = { "c", "rust", "toml" },
+  ensure_installed = { "c", "toml" },
 
   highlight = {
     enable = true,
@@ -302,6 +352,23 @@ dap.configurations.python = {
     },
 }
 
+dap.configurations.rust = {
+  {
+    name = "Launch Rust executable",
+    type = "codelldb",
+    request = "launch",
+    program = function()
+      -- Build and return the target executable
+      vim.fn.jobstart("cargo build")
+      return vim.fn.input("Path to executable: ", "target/debug/", "file")
+    end,
+    cwd = "${workspaceFolder}",
+    stopOnEntry = false,
+    args = {},
+    runInTerminal = false,
+  },
+}
+
 dap.listeners.after.event_initialized["dapui_config"] = function()
   dapui.open()
 end
@@ -329,12 +396,28 @@ vim.keymap.set("n", "<leader>dn", function() dap.step_over() end, { desc = "Step
 vim.keymap.set("n", "<leader>di", function() dap.step_into() end, { desc = "Step Into" })
 vim.keymap.set("n", "<leader>do", function() dap.step_out() end, { desc = "Step Out" })
 
+vim.diagnostic.config({
+  virtual_text = {
+    spacing = 2,
+    prefix = "●",
+  },
+  underline = true,
+})
+
 require("trouble").setup({
-  mode = "workspace_diagnostics", -- default mode when opened
+  default = "workspace_diagnostics",
+
+  auto_preview = true,
+  use_diagnostic_signs = true,
+
+  signs = true,
   height = 12,
   group = true,
-  auto_preview = false,
-  use_diagnostic_signs = true,
+
+  preview = {
+    type = "float",
+    border = "rounded"
+  },
 })
 
 EOF
