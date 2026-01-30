@@ -44,6 +44,7 @@ $PKG_MGR install -y ripgrep \
 
 git config --global user.email "joe@example.com"
 git config --global user.name "Joseph Farrell"
+git config --global fetch.prune true
 
 # install node (coc-vim dependency)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash

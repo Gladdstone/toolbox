@@ -25,3 +25,7 @@ dnf install \
     fortune \
     sl
 
+# set screen lock
+kwriteconfig6 --file kscreenlockerrc --group Daemon --key Timeout 600
+kwriteconfig6 --file kscreenlockerrc --group Daemon --key Autolock true
+
