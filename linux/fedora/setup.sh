@@ -14,6 +14,15 @@ dnf install \
     wayland-devel \
     wayland-protocols-devel
 
+# gtk
+dnf install pango-devel harfbuzz-devel glib2-devel \
+    cairo-devel cairo-gobject-devel glib2-devel gobject-introspection-devel \
+    libdbusmenu-devel \
+    gdk-pixbuf2-devel \
+    gtk3-devel \
+    libdbusmenu-gtk3-devel \
+    gtk-layer-shell-devel
+
 # rootkit stuff
 dnf install \
     rkhunter \
