@@ -12,7 +12,10 @@ dnf install \
     libXrandr-devel \
     libXinerama-devel \
     wayland-devel \
-    wayland-protocols-devel
+    wayland-protocols-devel \
+    libdrm-devel \
+    libepoxy-devel
+
 
 # rootkit stuff
 dnf install \
