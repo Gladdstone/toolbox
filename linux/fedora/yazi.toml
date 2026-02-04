@@ -1,0 +1,8 @@
+[manager]
+show_hidden = true
+
+[opener]
+edit = [
+  { run = 'ghostty --class=yazi-float -e vim "$@"', block = true }
+]
+

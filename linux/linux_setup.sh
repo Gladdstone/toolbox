@@ -40,6 +40,7 @@ echo "Using $PKG_MGR"
 $PKG_MGR update && $PKG_MGR upgrade -y
 
 $PKG_MGR install -y ripgrep \
+    mutt \
     vim
 
 git config --global user.email "joe@example.com"
@@ -50,6 +51,7 @@ git config --global fetch.prune true
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
 source ~/.bashrc
 nvm install node
+npm install sass
 
 curl https://sh.rustup.rs -sSf | bash -s -- -y
 
