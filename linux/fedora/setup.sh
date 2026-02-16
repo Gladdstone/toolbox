@@ -2,7 +2,9 @@
 dnf group install development-tools c-development
 dnf install \
     gcc \
+    gcc-c++ \
     cmake \
+    extra-cmake-modules \
     libxcb-devel \
     libxkbcommon-devel \
     libxkbcommon-x11-devel \
@@ -16,6 +18,11 @@ dnf install \
     libdrm-devel \
     libepoxy-devel
 
+# panel colorizer and dependencies
+dnf install libplasma-devel spectacle python3 python3-dbus python3-gobject
+git clone https://github.com/luisbocanegra/plasma-panel-colorizer
+./plasma-panel-colorizer/install.sh
+rm -rf plasma-panel-colorizer
 
 # gtk
 dnf install pango-devel harfbuzz-devel glib2-devel \
